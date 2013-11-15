@@ -1,0 +1,8 @@
+Run script to produce trailer-menu xml file.
+Add button to invoke it to some menu file like so:
+
+<button>
+      <type>MOVIETIMES</type>
+      <text>Movie Trailers</text>
+      <action>MENU hdmovietrailers.xml</action>
+</button>
