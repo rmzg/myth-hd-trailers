@@ -1,4 +1,6 @@
 Run script to produce trailer-menu xml file.
+./fetch-trailers.pl /usr/local/share/mythtv/themes/defaultmenu/hdmovietrailers.xml
+
 Add button to invoke it to some menu file like so:
 
 <button>
