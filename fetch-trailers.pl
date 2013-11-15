@@ -10,8 +10,9 @@ use JSON qw/decode_json/;
 my $hd_trailers_url = "http://www.hd-trailers.net/page/1/";
 #TODO Figure out how to replace this with vlc..
 # Also should we always just be QuickTime?
-my $play_command = "/usr/bin/mplayer -fs -zoom -quiet -user-agent QuickTime -cache-min 75 -cache 16384";
-my $button_template = "\t<button>\n\t\t<type>VIDEO_BROWSER</type>\n\t\t<text>%s</text>\n\t\t<action>EXEC $play_command %s</action>\n\t</button>";
+my $play_command = "/usr/bin/mplayer -fs -zoom -quiet -user-agent QuickTime -cache-min 10 -cache 16384";
+my $button_template = "\t<button>\n\t\t<type>VIDEO_BROWSER</type>\n\t\t<text>%s</text>\n\t\t<action>EXEC $play_command '%s'</action>\n\t</button>";
+my $output_file = ( $ARGV[0] || "./hdmovietrailers.xml" );
 ############
 
 my $ua = LWP::UserAgent->new( agent => 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36' );
@@ -151,7 +152,7 @@ $new_trailer_menu .= "</mythmenu>";
 
 # Check to see if we've actually generated a new file since we could have failed to parse/fetch every single trailer
 if( length $new_trailer_menu  > 30 ) {
-	open my $fh, ">", "hdmovietrailer.xml" or die "Failed to open hdmovietrailer.xml: $!\n";
+	open my $fh, ">", $output_file or die "Failed to open $output_file: $!\n";
 	print $fh $new_trailer_menu;
 }
 else {
