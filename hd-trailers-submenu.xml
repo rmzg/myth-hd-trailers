@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <mythmenu name="HD_TRAILERS">
-
 	<button>
 		<type>VIDEO</type>
 		<text>Latest</text>
@@ -12,34 +11,34 @@
 		<type>VIDEO</type>
 		<text>Opening</text>
 		<description>Play the Opening Trailers</description>
-		<action>MENU hd-trailers-opening.xml</action>
+		<action>MENU hd-trailers-opening-this-week.xml</action>
 	</button>
 
 	<button>
 		<type>VIDEO</type>
 		<text>Coming Soon</text>
 		<description>Play the Coming Soon Trailers</description>
-		<action>MENU hd-trailers-comingsoon.xml</action>
+		<action>MENU hd-trailers-coming-soon.xml</action>
 	</button>
 
 	<button>
 		<type>VIDEO</type>
 		<text>New Netflix</text>
 		<description>Play the New at Netflix Trailers</description>
-		<action>MENU hd-trailers-newnetflix.xml</action>
+		<action>MENU hd-trailers-netflix-new-releases.xml</action>
 	</button>
 
 	<button>
 		<type>VIDEO</type>
 		<text>Most Watched</text>
 		<description>Play the Most Watched Trailers</description>
-		<action>MENU hd-trailers-mostwatched.xml</action>
+		<action>MENU hd-trailers-most-watched.xml</action>
 	</button>
 
 	<button>
 		<type>VIDEO</type>
 		<text>Top 10</text>
 		<description>Play the Top 10 Trailers</description>
-		<action>MENU hd-trailers-top10.xml</action>
+		<action>MENU hd-trailers-top-movies.xml</action>
 	</button>
 </mythmenu>

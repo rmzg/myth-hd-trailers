@@ -7,16 +7,23 @@ use LWP::UserAgent;
 use JSON qw/decode_json/;
 
 ############ CONFIG
-#my $hd_trailers_url = "http://www.hd-trailers.net/page/1/";
-my $hd_trailers_url = "http://www.hd-trailers.net/coming-soon/";
 #TODO Figure out how to replace this with vlc..
 # Also should we always just be QuickTime?
 my $play_command = "/usr/bin/mplayer -fs -zoom -quiet -user-agent QuickTime -cache-min 10 -cache 16384";
-my $button_template = "\t<button>\n\t\t<type>VIDEO_BROWSER</type>\n\t\t<text>%s</text>\n\t\t<action>EXEC $play_command '%s'</action>\n\t</button>";
-my $output_file = ( $ARGV[0] || "./hdmovietrailers.xml" );
+my $button_template = "\t<button>\n\t\t<type>VIDEO_BROWSER</type>\n\t\t<text>%s</text>\n\t\t<action>EXEC $play_command '%s'</action>\n\t</button>\n";
+my $output_dir = ( $ARGV[0] // "/usr/local/share/mythtv/themes/defaultmenu" );
 ############
 
 my $ua = LWP::UserAgent->new( agent => 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36' );
+
+for my $trailer_page ( qw{page/1 coming-soon most-watched top-movies opening-this-week coming-soon netflix-new-releases} ) {
+
+my $menu_file = "hd-trailers-$trailer_page.xml";
+if( $trailer_page eq 'page/1' ) { $menu_file = "hd-trailers-latest.xml" }
+
+my $hd_trailers_url = "http://www.hd-trailers.net/$trailer_page";
+
+
 my $resp = $ua->get( $hd_trailers_url );
 
 if( not $resp->is_success ) {
@@ -26,7 +33,7 @@ if( not $resp->is_success ) {
 my $index_content = $resp->decoded_content;
 
 # The new menu we're producing.
-my $new_trailer_menu = '<mythmenu name="TRAILERS">' . "\n";
+my $new_trailer_menu = '<mythmenu name="$trailer_page">' . "\n";
 
 my %seen_movie;
 # Parse the HTML using a regex to avoid an actual parser dependency. We may go to hell for this.
@@ -133,31 +140,46 @@ while( $index_content =~ m{href="(/movie/[^"]+)"}g ) {
 
 		( $stream_uri ) = map { $_->[0] } sort { $b->[1] <=> $a->[1] } @trailer_uris;
 	}
-	#TODO Add support for youtube trailers!
-	# Perhaps via youtube-dl?
-	# mplayer -fs "$(youtube-dl '$stream_uri')" appears to work!
-	# But will it work in an EXEC command?
-	else {
-		warn "Failed to find any kind of trailer uri for [$movie_url]\n";
-		next;
+	elsif( $movie_content =~ m{href="http://avideos.5min.com[^"]+\.mp4"}i ) {
+
+		my @trailer_uris;
+		while( $movie_content =~ m{href="(http://avideos.5min.com[^"]+?(?:_(\d+))?\.mp4)"}ig ) { 
+			push @trailer_uris, [ $1, $2 // 0 ];
+		}
+
+		( $stream_uri ) = map { $_->[0] } sort { $b->[1] <=> $a->[1] } @trailer_uris;
+		}
+		elsif( $movie_content =~ m{href="http://www.youtube.com/watch\?}i ) { 
+			#TODO Add support for youtube trailers!
+			# Perhaps via youtube-dl?
+			# mplayer -fs "$(youtube-dl '$stream_uri')" appears to work!
+			# But will it work in an EXEC command?
+			warn "Skipping $movie_url: youtube only.\n";
+			next;
+		}
+		else {
+			warn "Failed to find any kind of trailer uri for [$movie_url]\n";
+			next;
+		}
+
+		$stream_uri =~ s/&/&amp;/g; #We're inserting this into XML but does mythtv actually care?
+		$stream_uri =~ s/'/&apos;/g;
+		$stream_uri =~ s/"/&quot;/g;
+		$stream_uri =~ s/</&lt;/g;
+		$stream_uri =~ s/>/&gt;/g;
+
+		$new_trailer_menu .= sprintf $button_template, $title, $stream_uri;
 	}
 
-	$stream_uri =~ s/&/&amp;/g; #We're inserting this into XML but does mythtv actually care?
-	$stream_uri =~ s/'/&apos;/g;
-	$stream_uri =~ s/"/&quot;/g;
-	$stream_uri =~ s/</&lt;/g;
-	$stream_uri =~ s/>/&gt;/g;
+	$new_trailer_menu .= "</mythmenu>";
 
-	$new_trailer_menu .= sprintf $button_template, $title, $stream_uri;
-}
-
-$new_trailer_menu .= "</mythmenu>";
-
-# Check to see if we've actually generated a new file since we could have failed to parse/fetch every single trailer
-if( length $new_trailer_menu  > 30 ) {
-	open my $fh, ">", $output_file or die "Failed to open $output_file: $!\n";
-	print $fh $new_trailer_menu;
-}
-else {
-	warn "I think we failed on every single trailer:\n $new_trailer_menu\n";
+	# Check to see if we've actually generated a new file since we could have failed to parse/fetch every single trailer
+	if( length $new_trailer_menu  > 30 ) {
+		my $output_file = "$output_dir/$menu_file";
+		open my $fh, ">", $output_file or die "Failed to open $output_file: $!\n";
+		print $fh $new_trailer_menu;
+	}
+	else {
+		warn "I think we failed on every single trailer:\n $new_trailer_menu\n";
+	}
 }

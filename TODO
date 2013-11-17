@@ -1,2 +1,3 @@
 add support for other trailer types (upcoming,netflix) to fetch-trailers.pl
 Also add actual error logging
+Handle movies with many sets of trailers e.g. http://www.hd-trailers.net/movie/the-hobbit-the-desolation-of-smaug/
