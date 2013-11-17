@@ -7,7 +7,8 @@ use LWP::UserAgent;
 use JSON qw/decode_json/;
 
 ############ CONFIG
-my $hd_trailers_url = "http://www.hd-trailers.net/page/1/";
+#my $hd_trailers_url = "http://www.hd-trailers.net/page/1/";
+my $hd_trailers_url = "http://www.hd-trailers.net/coming-soon/";
 #TODO Figure out how to replace this with vlc..
 # Also should we always just be QuickTime?
 my $play_command = "/usr/bin/mplayer -fs -zoom -quiet -user-agent QuickTime -cache-min 10 -cache 16384";
@@ -97,11 +98,13 @@ while( $index_content =~ m{href="(/movie/[^"]+)"}g ) {
 	}
 	# Check for apple movie trailers
 	# We prefer apple trailers to avoid using hd-trailer's bandwidth!
-	elsif( $movie_content =~ m{http://movietrailers.apple.com/movies/.+\.mov}i ) {
+	#http://trailers.apple.com/movies/independent/frozen/frozen-tlr1_h1080p.mov
+	#http://movietrailers.apple.com/movies/wb/thehobbit2/thehobbit2-sneakpeek_h1080p.mov
+	elsif( $movie_content =~ m{http://(?:movie)?trailers.apple.com/movies/.+\.mov}i ) { 
 
 		my @apple_uris;
 
-		while( $movie_content =~ m{href="(http://movietrailers.apple.com/movies/[^"]+\.mov)"}ig ) {
+		while( $movie_content =~ m{href="(http://(?:movie)?trailers.apple.com/movies/[^"]+\.mov)"}ig ) {
 			my $uri = $1;
 			my $res = 0;
 			if( $uri =~ /(\d+)/ ) {
